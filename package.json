@@ -1,0 +1,22 @@
+{
+  "name": "knight-s-tour-dcp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Board.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BasicallyOk/Knight-s-Tour-DCP.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BasicallyOk/Knight-s-Tour-DCP/issues"
+  },
+  "homepage": "https://github.com/BasicallyOk/Knight-s-Tour-DCP#readme",
+  "dependencies": {
+    "dcp-client": "^4.2.5"
+  }
+}
