@@ -11,7 +11,7 @@ async function main() {
     const inputSet = Array.from('yelling!');
     
     /* COMPUTE FOR */
-    const job = compute.for(inputSet, workFn, );
+    const job = compute.for(inputSet, workFn);
     job.public.name = 'toUpperCompute';
   
     // SKIP IF: you do not need a compute group

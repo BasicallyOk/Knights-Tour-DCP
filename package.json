@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/BasicallyOk/Knight-s-Tour-DCP#readme",
   "dependencies": {
-    "dcp-client": "^4.2.5"
+    "dcp-client": "^4.2.5",
+    "dcp-util": "^2.2.5"
   }
 }
