@@ -47,12 +47,14 @@ function merge(boardList){
     mergedBoard.width += boardList[0].width + boardList[1].width
     mergedBoard.height += boardList[0].height + boardList[3].height
 
+    let tempStart // Unnecessary atm, will be helpful if we want to also update boardArray
+
     // Loop through each quadrant and update mergedBoard
-    let tempStart;
     for (let quadrant = 0; quadrant < 4; quadrant++) {
         let diffHeight = 0;
         let diffWidth =  0;
         let startMoveNum, endMoveNum;
+        let board = boardList[quadrant]
         // Handle change in coordinates based on which quadrant of the board it is
         switch (quadrant) {
             case 0:
@@ -73,11 +75,16 @@ function merge(boardList){
             case 3:
                 diffHeight += boardList[0].height
                 startMoveNum = boardList[2].boardArray[boardList[2].width -2][2]
-                endMoveNum = board[2].boardArray[boardList[2].width -2][0]
+                endMoveNum = boardList[2].boardArray[boardList[2].width -2][0]
                 break
         }
-        // super dirty triple nested loop but the top loop only goes 4 times
-        for (let x in boardList[0].boardArray)
+
+        for (let i = 0; i < board.width * board.height; i++) {
+            let loc = board.visited[(i + startMoveNum) % board.width * board.height];
+            mergedBoard.visited.push([loc[0] + diffWidth][loc[1] + diffHeight])
+        }
+
+        tempStart = endMoveNum; // Update tempstart
     }
 }
 
