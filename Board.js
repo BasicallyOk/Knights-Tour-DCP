@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 function partition(height, width) {
     const ogWidth = width
 
@@ -59,7 +58,6 @@ function merge(boardList){
             case 0:
                 startMoveNum = boardList[0].boardArray[boardList[0].width-1][boardList[0].height-2]
                 endMoveNum = boardList[0].boardArray[boardList[0].width-3][boardList[0].height-1]
-                
                 break
             case 1:
                 diffWidth += boardList[0].width // 1 is top right 
@@ -85,10 +83,6 @@ function merge(boardList){
 
 async function knightsTour(board){
     //progress();
-=======
-async function knightsTour(board){
-    // progress();
->>>>>>> de0579b82211eb13e622b919cfa00afbc285fb70
     // import Board from './Board';
     // Starting location does not matter since we're looking for a closed undirected tour
     let currLoc = [...board.visited[0]]
@@ -229,7 +223,6 @@ async function knightsTour(board){
                 }
             }
         }
-<<<<<<< HEAD
     }
 
     while (!findTour(board.boardArray, currLoc)) {
@@ -241,31 +234,3 @@ async function knightsTour(board){
 
 /* INPUT SET */
 const inputSet = partition(24, 24);
-=======
-    }
-
-    while (!findTour(board.boardArray, currLoc)) {
-        // progress()
-        console.log("Try again")
-    }
-    // progress()
-}
-
-let board = {
-    boardArray: [], 
-    visited: [[5, 5]],
-    width: 10, 
-    height: 10
-}
-
-for (let i = 0; i < board.width; i++) {
-    let column = []
-    for (let j = 0; j < board.height; j++) {
-        column.push(-1)
-    }
-    board.boardArray.push(column)
-}
-
-knightsTour(board)
-console.log(board.boardArray)
->>>>>>> de0579b82211eb13e622b919cfa00afbc285fb70
