@@ -80,7 +80,7 @@ function merge(boardList){
         }
 
         for (let i = 0; i < board.width * board.height; i++) {
-            let loc = board.visited[(i + startMoveNum) % board.width * board.height];
+            let loc = board.visited[(i + startMoveNum) % (board.width * board.height)];
             mergedBoard.visited.push([loc[0] + diffWidth, loc[1] + diffHeight])
         }
 
@@ -220,7 +220,8 @@ async function knightsTour(board){
                     return true
                 } else { // Fail State    
                     board.boardArray.length = 0 // Reset Array    
-                    board.visited.length = 0 // Reset visited  
+                    board.visited.length = 0 // Reset visited 
+                    // Reset information within 
                     for (let i = 0; i < board.width; i++) {
                         let column = []
                         for (let j = 0; j < board.height; j++) {
@@ -228,6 +229,8 @@ async function knightsTour(board){
                         }
                         board.boardArray.push(column)
                     }
+                    // Re-insert original location
+                    board.visited.push(currLoc)
                     currLoc = start // Reset Location
                     return false
                 }
@@ -247,7 +250,7 @@ for (let board of boardList) {
     knightsTour(board);
 }
 
-console.log(boardList[0])
+console.log(boardList[0].visited)
 
 let merged = merge(boardList)
 for (let i = 0; i < merged.visited.length; i++) {
