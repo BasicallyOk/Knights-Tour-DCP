@@ -32,12 +32,13 @@ function partition(height, width) {
     return boardlist;
 }
 
-function generateBoard(width, height){
+function generateBoard(width, height, index){
     let board = {
         boardArray: [], 
         width: width, 
         height: height, 
-        visited: []
+        visited: [], 
+        index: index
     }
 
     for (let i = 0; i < board.width; i++) {
@@ -76,32 +77,23 @@ function isSolvable(width, height) {
  * @param {Number} width must be smaller or equal to height
  * @param {Number} height 
  */
-function weirdPartition(boardList, width, height) {
-    if (width >= 6 && width <= 8 && height >= 6 && height <= 8 && !(width === 7 && height === 7) ) {
-        return generateBoard(width, height)
-    }
+function weirdPartition(width, height, parentIndex) {
     let i = Math.floor(width/2);
     let j = Math.floor(height/2);
     let iTurn = true;
     while (true) {
-        if (!isSolvable) {
-            if (iTurn) { i-- } else { j-- }
+        if (!isSolvable(i, j) || !isSolvable(width - i) || !isSolvable(height-i) || i === width || j === height) {
+            if (iTurn) { i++ } else { j++ }
             iTurn = !iTurn
         } else {
             break
         }
     }
-    return [weirdPartition]
-    weirdPartition(boardList, i, j);
-    weirdPartition(boardList, width - i, j);
-    weirdPartition(boardList, i, height - j);
-    weirdPartition(boardList, width - i, height - j);
-    boardList.push(generateBoard(i, j))
-    boardList.push(generateBoard(width - i, j))
-    boardList.push(generateBoard(i, height - j))
-    boardList.push(generateBoard(width - i, height - j))
-
-    return true
+    if (i === width || j === height) {
+        return [generateBoard(width, height, parentIndex)]
+    } else {
+        return [].concat(weirdPartition(i, j, `${parentIndex}0`), weirdPartition(width-i, j, `${parentIndex}1`), weirdPartition(i, height-j, `${parentIndex}2`), weirdPartition(width-i, height-j, `${parentIndex}3`))
+    }
 }
 
 /**
@@ -313,21 +305,19 @@ async function knightsTour(board){
     // progress()
 }
 
-let boardList = partition(6, 6)
-for (let board of boardList) {
-    knightsTour(board);
-}
+let boardList = weirdPartition(99, 99, 0) // Doesnt work too well for non-squares
 
-console.log(boardList[0].visited)
-console.log(boardList[0].boardArray)
+let boardSizes = boardList.map(board => {
+    [board.width, board.height]
+})
 
-let merged = merge(boardList)
-for (let i = 0; i < merged.visited.length; i++) {
-    console.log(`${i}: [${merged.visited[i][0]}][${merged.visited[i][1]}]`)
-}
-console.log(merged.visited)
+console.log(boardSizes)
 
-module.exports = {
-    merge
-}
+// for (let board of boardList) {
+//     knightsTour(board);
+// }
 
+// let merged = merge(boardList)
+// for (let i = 0; i < merged.visited.length; i++) {
+//     console.log(`${i}: [${merged.visited[i][0]}][${merged.visited[i][1]}]`)
+// }
