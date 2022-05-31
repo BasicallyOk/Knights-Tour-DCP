@@ -1,24 +1,24 @@
-const {merge} = require('./Board')
+// const {merge} = require('./Board')
 async function main() {
     const compute = require('dcp/compute');
 
     function partition(height, width) {
         const ogWidth = width
-
+    
         while (width > 5 && height > 5 && (width%2 === 0 && height%2 === 0)) {
             width /= 2
             height /= 2
         }
         width *= 2
         height *= 2
-
+    
         let boardlist = []
         for (let i = 0; i < (ogWidth/width)**2; i++) {
             let board = {
                 boardArray: [], 
                 width: width, 
                 height: height, 
-                visited: [[5, 5]]
+                visited: []
             }
         
             for (let i = 0; i < board.width; i++) {
@@ -35,12 +35,69 @@ async function main() {
         
         return boardlist;
     }
+    
+    /**
+     * Merge 4 boards into 1
+     * @param {Array<Object>} boardList - A list of 4 mergeable boards to be merged into 1
+     */
+    function merge(boardList){
+        let mergedBoard = {
+            boardArray: [], 
+            visited: [], 
+            height: 0, 
+            width: 0
+        }
+        // For the moment this doesnt allow for weird boards but these props dont matter
+        mergedBoard.width += boardList[0].width + boardList[1].width
+        mergedBoard.height += boardList[0].height + boardList[3].height
+    
+        let tempStart // Unnecessary atm, will be helpful if we want to also update boardArray
+    
+        // Loop through each quadrant and update mergedBoard
+        for (let quadrant = 0; quadrant < 4; quadrant++) {
+            let diffHeight = 0;
+            let diffWidth =  0;
+            let startMoveNum, endMoveNum;
+            let board = boardList[quadrant]
+            // Handle change in coordinates based on which quadrant of the board it is
+            switch (quadrant) {
+                case 0:
+                    startMoveNum = boardList[0].boardArray[boardList[0].width-1][boardList[0].height-2]
+                    endMoveNum = boardList[0].boardArray[boardList[0].width-3][boardList[0].height-1]
+                    break
+                case 1:
+                    diffWidth = boardList[0].width // 1 is top right 
+                    startMoveNum = boardList[1].boardArray[1][boardList[1].height-3]
+                    endMoveNum = boardList[1].boardArray[0][boardList[1].height-1]
+                    break
+                case 2:
+                    diffWidth = boardList[3].width // allow for non-rectangular solutions
+                    diffHeight = boardList[1].height // allow for weird partitions
+                    startMoveNum = boardList[2].boardArray[0][2]
+                    endMoveNum = boardList[2].boardArray[0][1]
+                    break
+                case 3:
+                    diffHeight = boardList[0].height
+                    startMoveNum = boardList[2].boardArray[boardList[2].width -2][2]
+                    endMoveNum = boardList[2].boardArray[boardList[2].width -2][0]
+                    break
+            }
+    
+            for (let i = 0; i < board.width * board.height; i++) {
+                let loc = board.visited[(i + startMoveNum) % (board.width * board.height)];
+                mergedBoard.visited.push([loc[0] + diffWidth, loc[1] + diffHeight])
+            }
+    
+            tempStart = endMoveNum; // Update tempstart
+        }
+        return mergedBoard
+    }
 
     async function knightsTour(board){
         progress();
         // import Board from './Board';
         // Starting location does not matter since we're looking for a closed undirected tour
-        let currLoc = [...board.visited[0]]
+        let currLoc = [5, 5]
         // For now, modify this too
     
         /*
@@ -57,7 +114,6 @@ async function main() {
     
         /* WORK FUNCTION */
         // async function workFn(array, currLoc) {
-        let start = currLoc
     
         /**
          * Check if the tour is a closed tour
@@ -65,8 +121,8 @@ async function main() {
          */
         function isClosedTour() {
             return (
-                (Math.abs(currLoc[0] - 2) === 2 && Math.abs(currLoc[1] - 2) === 1) ||
-                (Math.abs(currLoc[0] - 2) === 1 && Math.abs(currLoc[1] - 2) === 2)      
+                (Math.abs(currLoc[0] - board.visited[0][0]) === 2 && Math.abs(currLoc[1] - board.visited[0][1]) === 1) ||
+                (Math.abs(currLoc[0] - board.visited[0][0]) === 1 && Math.abs(currLoc[1] - board.visited[0][1]) === 2)      
             )
         }
     
@@ -148,24 +204,27 @@ async function main() {
             }
         }
     
-        function findTour(array, currLoc) {
-            let size = array.length * array[0].length
+        function findTour() {
+            let size = board.boardArray.length * board.boardArray[0].length
             let visitedCounter = 1
-            array[currLoc[0]][currLoc[1]] = 0
+            board.boardArray[currLoc[0]][currLoc[1]] = 0
+            board.visited.push([...currLoc])
             while (true) {
-                let nextLoc = next()
-                board.visited.push(nextLoc)
-                if (nextLoc) {
+                let nextLoc = next() 
+                if (nextLoc) { 
                     currLoc[0] = nextLoc[0];
                     currLoc[1] = nextLoc[1];
-                    array[currLoc[0]][currLoc[1]] = visitedCounter
+                    board.visited.push([...currLoc])
+                    board.boardArray[currLoc[0]][currLoc[1]] = visitedCounter
                     visitedCounter++
                 } else {
                     if (size === visitedCounter && isClosedTour() && isMergeable()) { // Success State, add && isClosedTour() to u know
                         console.log("Found tour")
                         return true
                     } else { // Fail State    
-                        board.boardArray.length = 0 // Reset Array      
+                        board.boardArray.length = 0 // Reset Array    
+                        board.visited.length = 0 // Reset visited 
+                        // Reset information within 
                         for (let i = 0; i < board.width; i++) {
                             let column = []
                             for (let j = 0; j < board.height; j++) {
@@ -173,22 +232,22 @@ async function main() {
                             }
                             board.boardArray.push(column)
                         }
-                        currLoc = start // Reset Location
                         return false
                     }
                 }
             }
         }
     
-        while (!findTour(board.boardArray, currLoc)) {
+        while (!findTour()) {
             progress()
             console.log("Try again")
         }
         progress()
+        return board
     }
 
     /* INPUT SET */
-    const inputSet = partition(8, 8);
+    const inputSet = partition(10, 8);
 
     const job = compute.for(inputSet, knightsTour);
 
@@ -222,12 +281,16 @@ async function main() {
     /* PROCESS RESULTS */
     let resultSet = await job.exec();
     resultSet = Array.from(resultSet);
-    resultSet = [].slice.call(resultSet[0])
-    const newBoard = [...resultSet, ...resultSet, ...resultSet, ...resultSet]
+    // resultSet = [].slice.call(resultSet[0])
+    console.log(resultSet[0].visited)
+    console.log(resultSet[0].boardArray)
+    //const newBoard = merge(resultSet)
+    //const newBoard = [...resultSet, ...resultSet, ...resultSet, ...resultSet]
     console.log(' - Job Complete');
-    // console.log(newBoard);
+    console.log(newBoard.visited);
 
-    return newBoard
+    //return newBoard
+    return
 
     // const mergedBoard = merge(newBoard);
     // console.log(mergedBoard)

@@ -14,7 +14,7 @@ function partition(height, width) {
             boardArray: [], 
             width: width, 
             height: height, 
-            visited: [[5, 5]]
+            visited: []
         }
     
         for (let i = 0; i < board.width; i++) {
@@ -30,6 +30,78 @@ function partition(height, width) {
     // const sections = array.slice(sx, ex+1).map(i => i.slice(sy, ey));
     
     return boardlist;
+}
+
+function generateBoard(width, height){
+    let board = {
+        boardArray: [], 
+        width: width, 
+        height: height, 
+        visited: []
+    }
+
+    for (let i = 0; i < board.width; i++) {
+        let column = []
+        for (let j = 0; j < board.height; j++) {
+            column.push(-1)
+        }
+        board.boardArray.push(column)
+    }
+    return board
+}
+/**
+ * 
+ * @param {Number} width Must be smaller or equal to height 
+ * @param {Number} height 
+ * @returns 
+ */
+function isSolvable(width, height) {
+    if (width % 2 === 1 && height % 2 === 1) {
+        return false
+    }
+
+    if (width === 1 || width === 2 || width === 4) {
+        return false
+    }
+
+    if (width === 3 && (height === 4 || height === 6 || height === 8)){
+        return false
+    }
+
+    return true
+}
+
+/**
+ * 
+ * @param {Number} width must be smaller or equal to height
+ * @param {Number} height 
+ */
+function weirdPartition(boardList, width, height) {
+    if (width >= 6 && width <= 8 && height >= 6 && height <= 8 && !(width === 7 && height === 7) ) {
+        return generateBoard(width, height)
+    }
+    let i = Math.floor(width/2);
+    let j = Math.floor(height/2);
+    let iTurn = true;
+    while (true) {
+        if (!isSolvable) {
+            if (iTurn) { i-- } else { j-- }
+            iTurn = !iTurn
+        } else {
+            break
+        }
+    }
+    return [weirdPartition]
+    weirdPartition(boardList, i, j);
+    weirdPartition(boardList, width - i, j);
+    weirdPartition(boardList, i, height - j);
+    weirdPartition(boardList, width - i, height - j);
+    boardList.push(generateBoard(i, j))
+    boardList.push(generateBoard(width - i, j))
+    boardList.push(generateBoard(i, height - j))
+    boardList.push(generateBoard(width - i, height - j))
+
+    return true
 }
 
 /**
@@ -93,7 +165,7 @@ async function knightsTour(board){
     //progress();
     // import Board from './Board';
     // Starting location does not matter since we're looking for a closed undirected tour
-    let currLoc = [...board.visited[0]]
+    let currLoc = [5, 5]
     // For now, modify this too
 
     /*
@@ -110,7 +182,6 @@ async function knightsTour(board){
 
     /* WORK FUNCTION */
     // async function workFn(array, currLoc) {
-    let start = currLoc
 
     /**
      * Check if the tour is a closed tour
@@ -118,8 +189,8 @@ async function knightsTour(board){
      */
     function isClosedTour() {
         return (
-            (Math.abs(currLoc[0] - 2) === 2 && Math.abs(currLoc[1] - 2) === 1) ||
-            (Math.abs(currLoc[0] - 2) === 1 && Math.abs(currLoc[1] - 2) === 2)      
+            (Math.abs(currLoc[0] - board.visited[0][0]) === 2 && Math.abs(currLoc[1] - board.visited[0][1]) === 1) ||
+            (Math.abs(currLoc[0] - board.visited[0][0]) === 1 && Math.abs(currLoc[1] - board.visited[0][1]) === 2)      
         )
     }
 
@@ -201,18 +272,18 @@ async function knightsTour(board){
         }
     }
 
-    function findTour(array, currLoc) {
-        let size = array.length * array[0].length
+    function findTour() {
+        let size = board.boardArray.length * board.boardArray[0].length
         let visitedCounter = 1
-        array[currLoc[0]][currLoc[1]] = 0
-        board.visited.push(currLoc)
+        board.boardArray[currLoc[0]][currLoc[1]] = 0
+        board.visited.push([...currLoc])
         while (true) {
             let nextLoc = next() 
-            if (nextLoc) {
-                board.visited.push(nextLoc)
+            if (nextLoc) { 
                 currLoc[0] = nextLoc[0];
                 currLoc[1] = nextLoc[1];
-                array[currLoc[0]][currLoc[1]] = visitedCounter
+                board.visited.push([...currLoc])
+                board.boardArray[currLoc[0]][currLoc[1]] = visitedCounter
                 visitedCounter++
             } else {
                 if (size === visitedCounter && isClosedTour() && isMergeable()) { // Success State, add && isClosedTour() to u know
@@ -229,33 +300,32 @@ async function knightsTour(board){
                         }
                         board.boardArray.push(column)
                     }
-                    // Re-insert original location
-                    board.visited.push(currLoc)
-                    currLoc = start // Reset Location
                     return false
                 }
             }
         }
     }
 
-    while (!findTour(board.boardArray, currLoc)) {
+    while (!findTour()) {
         // progress()
         console.log("Try again")
     }
     // progress()
 }
 
-let boardList = partition(12, 12)
+let boardList = partition(6, 6)
 for (let board of boardList) {
     knightsTour(board);
 }
 
 console.log(boardList[0].visited)
+console.log(boardList[0].boardArray)
 
 let merged = merge(boardList)
 for (let i = 0; i < merged.visited.length; i++) {
     console.log(`${i}: [${merged.visited[i][0]}][${merged.visited[i][1]}]`)
 }
+console.log(merged.visited)
 
 module.exports = {
     merge
