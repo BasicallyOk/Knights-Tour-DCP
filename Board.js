@@ -254,3 +254,7 @@ for (let i = 0; i < merged.visited.length; i++) {
     console.log(`${i}: [${merged.visited[i][0]}][${merged.visited[i][1]}]`)
 }
 
+module.exports = {
+    merge
+}
+
