@@ -1,3 +1,4 @@
+const {merge} = require('./Board')
 async function main() {
     const compute = require('dcp/compute');
 
@@ -187,7 +188,7 @@ async function main() {
     }
 
     /* INPUT SET */
-    const inputSet = partition(24, 24);
+    const inputSet = partition(8, 8);
 
     const job = compute.for(inputSet, knightsTour);
 
@@ -221,7 +222,16 @@ async function main() {
     /* PROCESS RESULTS */
     let resultSet = await job.exec();
     resultSet = Array.from(resultSet);
-    console.log(resultSet);
+    resultSet = [].slice.call(resultSet[0])
+    const newBoard = [...resultSet, ...resultSet, ...resultSet, ...resultSet]
     console.log(' - Job Complete');
+    // console.log(newBoard);
+
+    return newBoard
+
+    // const mergedBoard = merge(newBoard);
+    // console.log(mergedBoard)
 }
-require('dcp-client').init('https://scheduler.distributed.computer').then(main);
+
+module.exports = main
+
