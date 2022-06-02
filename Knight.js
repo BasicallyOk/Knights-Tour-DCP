@@ -282,15 +282,15 @@ async function main() {
     let resultSet = await job.exec();
     resultSet = Array.from(resultSet);
     // resultSet = [].slice.call(resultSet[0])
-    console.log(resultSet[0].visited)
-    console.log(resultSet[0].boardArray)
+    // console.log(resultSet[0].visited)
+    // console.log(resultSet[0].boardArray)
     //const newBoard = merge(resultSet)
     //const newBoard = [...resultSet, ...resultSet, ...resultSet, ...resultSet]
     console.log(' - Job Complete');
-    console.log(newBoard.visited);
+    console.log(resultSet[0]);
 
     //return newBoard
-    return
+    return resultSet[0].visited
 
     // const mergedBoard = merge(newBoard);
     // console.log(mergedBoard)
