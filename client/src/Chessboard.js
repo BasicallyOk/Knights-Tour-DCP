@@ -5,9 +5,9 @@ const Chessboard = () => {
 
     const [data, setData] = useState([])
 
-    // useEffect(() => {
-    //     axios.get('/dcp').then(response => setData(response.data))
-    // }, [])
+    useEffect(() => {
+        axios.get('/dcp').then(response => setData(response.data))
+    }, [])
 
     useEffect(() => {
         const position = {}
@@ -18,11 +18,11 @@ const Chessboard = () => {
         let canvas = document.getElementById("canvasChessboard");
         let context = canvas.getContext("2d");
 
-        canvas.width  = 600;
-        canvas.height = 600;
+        canvas.width  = 5000;
+        canvas.height = 5000;
 
-        for(let i=0; i<18; i++) {
-            for(let j=0; j<18; j++) {
+        for(let i=0; i<100; i++) {
+            for(let j=0; j<100; j++) {
                 context.fillStyle = ((i+j)%2===0) ? "white":"black";
                 let xOffset = boardTopx + j*squareSize;
                 let yOffset = boardTopy + i*squareSize;
@@ -37,8 +37,8 @@ const Chessboard = () => {
         context.lineWidth = 2;
 
         
-        for(let i=0; i<18; i++) {
-            for(let j=0; j<18; j++) {
+        for(let i=0; i<100; i++) {
+            for(let j=0; j<100; j++) {
                 let xOffset = boardTopx + j*squareSize + 25;
                 let yOffset = boardTopy + i*squareSize + 25;
                 
@@ -55,9 +55,6 @@ const Chessboard = () => {
                 context.stroke();
             }
         }
-
-
-
     }, [data]);
 
     

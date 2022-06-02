@@ -191,6 +191,8 @@ function merge(boardList){
                 break
         }
 
+        console.log(board.visited[endMoveNum])
+
         for (let i = 0; i < board.width * board.height; i++) {
             let loc = board.visited[(i + startMoveNum) % (board.width * board.height)];
             mergedBoard.visited.push([loc[0] + diffWidth, loc[1] + diffHeight])
@@ -351,14 +353,13 @@ async function knightsTour(board){
         console.log("Try again")
     }
     // progress()
+    return board
 }
 
-let boardList = weirdPartition(18, 18, '0') // Doesnt work too well for non-squares
-
-console.log(boardSizes)
+let boardList = [generateBoard(10, 11, '0')] // Doesnt work too well for non-squares
 
 for (let board of boardList) {
-    knightsTour(board);
+    board = knightsTour(board);
 }
 
 // let board = generateBoard(5, 6)

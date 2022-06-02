@@ -2,45 +2,173 @@
 async function main() {
     const compute = require('dcp/compute');
 
-    function partition(height, width) {
-        const ogWidth = width
-    
-        while (width > 5 && height > 5 && (width%2 === 0 && height%2 === 0)) {
-            width /= 2
-            height /= 2
+    Number.prototype.mod = function (n) {
+        return ((this % n) + n) % n;
+    };
+      
+    function partition(width, height, parentIndex) {
+        let boardList = []
+        if (width % 4 === 0 && height % 4 === 0) {
+            console.log(`perfect partition at index ${parentIndex}`)
+            boardList = boardList.concat(perfectPartition(width, height, parentIndex)) 
+        } else {
+            console.log(`weird partition at index ${parentIndex}`)
+            boardList = boardList.concat(weirdPartition(width, height, parentIndex))
         }
-        width *= 2
-        height *= 2
-    
-        let boardlist = []
-        for (let i = 0; i < (ogWidth/width)**2; i++) {
-            let board = {
-                boardArray: [], 
-                width: width, 
-                height: height, 
-                visited: []
-            }
-        
-            for (let i = 0; i < board.width; i++) {
-                let column = []
-                for (let j = 0; j < board.height; j++) {
-                    column.push(-1)
-                }
-                board.boardArray.push(column)
-            }
-            boardlist.push(board)
+        return boardList
+    }
+    function perfectPartition(height, width, parentIndex) {
+        let boardList = []
+        for (let i = 0; i < 4; i++) {
+            boardList = boardList.concat(partition(height/2, width/2, parentIndex.concat(String(i))))
         }
-        
-        // const sections = array.slice(sx, ex+1).map(i => i.slice(sy, ey));
-        
-        return boardlist;
+        return boardList
     }
     
+    function generateBoard(width, height, index){
+        let board = {
+            boardArray: [], 
+            width: width, 
+            height: height, 
+            visited: [], 
+            index: index
+        }
+    
+        for (let i = 0; i < board.width; i++) {
+            let column = []
+            for (let j = 0; j < board.height; j++) {
+                column.push(-1)
+            }
+            board.boardArray.push(column)
+        }
+        return board
+    }
+    /**
+     * 
+     * @param {Number} width Must be smaller or equal to height 
+     * @param {Number} height 
+     * @returns 
+     */
+    function isSolvable(width, height) {
+        if (width > height) {
+            width = width + height - width
+            height = width + height - height
+        }
+        if (width < 2 || height < 2) {
+            return false
+        }
+
+        if ((width < 5 && height < 6) || (width < 6 && height < 5)) {
+            return false
+        }
+
+        if (width % 2 === 1 && height % 2 === 1) {
+            return false
+        }
+    
+        if (width === 1 || width === 2 || width === 4) {
+            return false
+        }
+    
+        if (width === 3 && (height === 4 || height === 6 || height === 8)){
+            return false
+        }
+    
+        return true
+    }
+    
+    /**
+     * Return true if the size is of a minimum board that may contain a solution to the closed knight's tour
+     * Will not necessarily return a closed knight's tour, must check using isSolvable
+     */
+    function minimumSolvable(width, height) {
+        if (width >= 6 && height >= 6 && width <= 10 && height <= 10) {
+            return true
+        }
+    }
+    
+    /**
+     * The algorithm will attempt to find a partition that makes all 4 quadrants as small as possible and still solvable
+     * Current algorithm is O(m x n). Maybe it can be faster?
+     * @param {Number} width must be smaller or equal to height
+     * @param {Number} height 
+     */
+    function weirdPartition(width, height, parentIndex) {
+        // The size of the minimum solvable board using Divide & Conquer
+        let i = 4
+        let j = 6
+        let iTurn = true
+        let prevSolvable = null
+        if (width % 2 === 1 && height % 2 === 1) {
+            throw new Error(`weirdPartition was given an unsolvable board of size [${width}, ${height}]`)
+        }
+        if (minimumSolvable(width, height)) {
+            if (isSolvable(width, height)) {
+                console.log(`Minimum solvable of ${width}x${height} reached at index ${parentIndex}`)
+                return [generateBoard(width, height, parentIndex)]
+            }
+            else {
+                throw new Error(`weirdPartition was given an unsolvable board of size [${width}, ${height}]`)
+            }
+        }
+        // This makes sure i and j dont go overboard
+        while(i <= width / 2 || j <= height % 2) {
+            if (i === Math.floor(width % 2)) {
+                iTurn = false
+            } else if (j === Math.floor(height % 2)) {
+                iTurn = true
+            }
+    
+            // Increment i and j in this manner until we get a good size
+            if (iTurn) {
+                i++
+            } else {
+                j++
+            }
+            iTurn = !iTurn
+            // If all quadrants are solvable, replace prevSolvable
+            if (isSolvable(i, j) && isSolvable(width - i, j) && isSolvable(i, height - j) && isSolvable(width - i, height - j)) { 
+                console.log(`prevSolvable updated to [${i}, ${j}] at index ${parentIndex}`)
+                prevSolvable = [i, j] 
+            }
+        }
+    
+        if (prevSolvable === null) {
+            if (isSolvable(width, height)) {
+                console.log(`No smaller solvable block, generating for ${width}x${height} at index ${parentIndex}`)
+                return [generateBoard(width, height, parentIndex)]
+            } else {
+                throw new Error(`weirdPartition was given an unsolvable and un-partition-able board of size [${width, height}]`)
+            }
+        }
+
+        i = prevSolvable[0]
+        j = prevSolvable[1]
+        console.log(`Size of partition: [${i}, ${j}]`)
+    
+        return partition(i, j, parentIndex.concat('0')).concat(partition(width - i, j, parentIndex.concat('1')), partition(width - i, height - j, parentIndex.concat('3')), partition(i, height - j, parentIndex.concat('2')))
+    }
+    
+    function mod(n, m) {
+        return ((n % m) + m) % m;
+    }
+
+    function mergeWrapper(boardList) {
+
+    }
+
     /**
      * Merge 4 boards into 1
      * @param {Array<Object>} boardList - A list of 4 mergeable boards to be merged into 1
      */
-    function merge(boardList){
+     function merge(boardList){
+        if (boardList.length === 1) { // Should not be anything other than 1 or 4
+            console.log("Only one board given, skipping merge")
+            return boardList[0]
+        }
+    
+        console.log('Attempting to merge')
+    
         let mergedBoard = {
             boardArray: [], 
             visited: [], 
@@ -62,8 +190,8 @@ async function main() {
             // Handle change in coordinates based on which quadrant of the board it is
             switch (quadrant) {
                 case 0:
-                    startMoveNum = boardList[0].boardArray[boardList[0].width-1][boardList[0].height-2]
-                    endMoveNum = boardList[0].boardArray[boardList[0].width-3][boardList[0].height-1]
+                    endMoveNum = boardList[0].boardArray[boardList[0].width-1][boardList[0].height-2]
+                    startMoveNum = boardList[0].boardArray[boardList[0].width-3][boardList[0].height-1]
                     break
                 case 1:
                     diffWidth = boardList[0].width // 1 is top right 
@@ -73,18 +201,29 @@ async function main() {
                 case 2:
                     diffWidth = boardList[3].width // allow for non-rectangular solutions
                     diffHeight = boardList[1].height // allow for weird partitions
-                    startMoveNum = boardList[2].boardArray[0][2]
+                    startMoveNum = boardList[2].boardArray[2][0]
                     endMoveNum = boardList[2].boardArray[0][1]
                     break
                 case 3:
                     diffHeight = boardList[0].height
-                    startMoveNum = boardList[2].boardArray[boardList[2].width -2][2]
-                    endMoveNum = boardList[2].boardArray[boardList[2].width -2][0]
+                    startMoveNum = boardList[3].boardArray[boardList[3].width -2][2]
+                    endMoveNum = boardList[3].boardArray[boardList[3].width -1][0]
                     break
             }
+            console.log(board.visited[startMoveNum])
+            console.log(board.visited[endMoveNum])
+            console.log(startMoveNum)
+            console.log(endMoveNum)
+
+            let directionSwitch = mod((startMoveNum+1), (board.width*board.height)) === endMoveNum
+            console.log(directionSwitch)
     
             for (let i = 0; i < board.width * board.height; i++) {
-                let loc = board.visited[(i + startMoveNum) % (board.width * board.height)];
+                let k = i
+                if (directionSwitch) {
+                    k = -i
+                }
+                let loc = board.visited[mod((k + startMoveNum), (board.width * board.height))];
                 mergedBoard.visited.push([loc[0] + diffWidth, loc[1] + diffHeight])
             }
     
@@ -92,12 +231,12 @@ async function main() {
         }
         return mergedBoard
     }
-
-    async function knightsTour(board){
-        progress();
+    
+    function knightsTour(board){
+        // progress();
         // import Board from './Board';
         // Starting location does not matter since we're looking for a closed undirected tour
-        let currLoc = [5, 5]
+        let currLoc = [0, 0]
         // For now, modify this too
     
         /*
@@ -239,58 +378,63 @@ async function main() {
         }
     
         while (!findTour()) {
-            progress()
+            // progress()
             console.log("Try again")
         }
-        progress()
+        // progress()
         return board
     }
 
     /* INPUT SET */
-    const inputSet = partition(10, 8);
+    const inputSet = partition(50, 50, '0');
+    console.log(inputSet.map(board => [board.width, board.height]))
+    let resultSet = []
+    for (let board of inputSet) {
+        resultSet.push(knightsTour(board))
+    }
 
-    const job = compute.for(inputSet, knightsTour);
+    // const job = compute.for(inputSet, knightsTour);
 
-    job.public.name = 'knights-tour-dcp';
+    // job.public.name = 'knights-tour-dcp';
 
-    // SKIP IF: you do not need a compute group
-    // job.computeGroups = [{ joinKey: 'KEY', joinSecret: 'SECRET' }];
-    job.computeGroups = [{ joinKey: "aitf", joinSecret: "9YDEXdihud" }];
+    // // // SKIP IF: you do not need a compute group
+    // // // job.computeGroups = [{ joinKey: 'KEY', joinSecret: 'SECRET' }];
+    // job.computeGroups = [{ joinKey: "aitf", joinSecret: "9YDEXdihud" }];
 
 
-    // Not mandatory console logs for status updates
-    job.on('accepted', () => {
-        console.log(` - Job accepted with id: ${job.id}`);
-    });
-    job.on('result', (ev) => {
-        console.log(` - Received result ${ev}`);
-    });
-    job.on("status", (ev) => {
-        console.log("Got status update: ", ev);
-    });
-    job.on("complete", (ev) => {
-        console.log("got complete");
-    });
-    job.on("readystatechange", (arg) => {
-        console.log(`new ready state: ${arg}`);
-    });
-    job.on("error", (err) => {
-        console.error(`Error: ${JSON.stringify(err)}`);
-    });
+    // // Not mandatory console logs for status updates
+    // job.on('accepted', () => {
+    //     console.log(` - Job accepted with id: ${job.id}`);
+    // });
+    // job.on('result', (ev) => {
+    //     console.log(` - Received result ${ev}`);
+    // });
+    // job.on("status", (ev) => {
+    //     console.log("Got status update: ", ev);
+    // });
+    // job.on("complete", (ev) => {
+    //     console.log("got complete");
+    // });
+    // job.on("readystatechange", (arg) => {
+    //     console.log(`new ready state: ${arg}`);
+    // });
+    // job.on("error", (err) => {
+    //     console.error(`Error: ${JSON.stringify(err)}`);
+    // });
 
-    /* PROCESS RESULTS */
-    let resultSet = await job.exec();
-    resultSet = Array.from(resultSet);
-    // resultSet = [].slice.call(resultSet[0])
-    // console.log(resultSet[0].visited)
-    // console.log(resultSet[0].boardArray)
-    //const newBoard = merge(resultSet)
-    //const newBoard = [...resultSet, ...resultSet, ...resultSet, ...resultSet]
+    // /* PROCESS RESULTS */
+    // let resultSet = await job.exec();
+    // resultSet = Array.from(resultSet);
+
+    const newBoard = merge(resultSet)
+    const mapping = resultSet.map(board => {board.index})
+    console.log(mapping)
+
     console.log(' - Job Complete');
-    console.log(resultSet[0]);
+    //console.log(resultSet[0]);
 
     //return newBoard
-    return resultSet[0].visited
+    return newBoard.visited
 
     // const mergedBoard = merge(newBoard);
     // console.log(mergedBoard)
