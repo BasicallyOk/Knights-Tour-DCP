@@ -73,27 +73,68 @@ function isSolvable(width, height) {
 }
 
 /**
- * 
+ * Return true if the size is of a minimum board that may contain a solution to the closed knight's tour
+ * Will not necessarily return a closed knight's tour, must check using isSolvable
+ */
+function minimumSolvable(width, height) {
+    if (width >= 5 && height >= 6 && width <= 10 && height <= 10) {
+        return true
+    }
+}
+
+/**
+ * The algorithm will attempt to find a partition that makes all 4 quadrants as small as possible and still solvable
+ * Current algorithm is O(m x n). Maybe it can be faster?
  * @param {Number} width must be smaller or equal to height
  * @param {Number} height 
  */
 function weirdPartition(width, height, parentIndex) {
-    let i = Math.floor(width/2);
-    let j = Math.floor(height/2);
-    let iTurn = true;
-    while (true) {
-        if (!isSolvable(i, j) || !isSolvable(width - i) || !isSolvable(height-i) || i === width || j === height) {
-            if (iTurn) { i++ } else { j++ }
-            iTurn = !iTurn
-        } else {
-            break
+    // The size of the minimum solvable board using Divide & Conquer
+    let i = 4
+    let j = 6
+    let iTurn = true
+    let prevSolvable = null
+    if (width % 2 === 1 && height % 2 === 1) {
+        throw new Error(`weirdPartition was given an unsolvable board of size [${width, height}]`)
+    }
+    if (minimumSolvable(width, height)) {
+        if (isSolvable(width, height)) {
+            return [generateBoard(width, height, parentIndex)]
+        }
+        else {
+            throw new Error(`weirdPartition was given an unsolvable board of size [${width, height}]`)
         }
     }
-    if (i === width || j === height) {
-        return [generateBoard(width, height, parentIndex)]
-    } else {
-        return [].concat(weirdPartition(i, j, `${parentIndex}0`), weirdPartition(width-i, j, `${parentIndex}1`), weirdPartition(i, height-j, `${parentIndex}2`), weirdPartition(width-i, height-j, `${parentIndex}3`))
+    // This makes sure i and j dont go overboard
+    while(i <= width / 2 || j <= height % 2) {
+        if (i === Math.floor(width % 2)) {
+            iTurn = false
+        } else if (j === Math.floor(height % 2)) {
+            iTurn = true
+        }
+
+        // Increment i and j in this manner until we get a good size
+        if (iTurn) {
+            i++
+        } else {
+            j++
+        }
+        iTurn = !iTurn
+        // If all quadrants are solvable, replace prevSolvable
+        if (isSolvable(i, j) && isSolvable(width - i, j) && isSolvable(i, height - j) && isSolvable(width - i, height - j)) { 
+            prevSolvable = [i, j] 
+        }
     }
+
+    if (prevSolvable === null) {
+        if (isSolvable(width, height)) {
+            return [generateBoard(width, height, parentIndex)]
+        } else {
+            throw new Error(`weirdPartition was given an unsolvable and un-partition-able board of size [${width, height}]`)
+        }
+    }
+
+    return weirdPartition(i, j, parentIndex.concat('0')).concat(weirdPartition(width - i, j, parentIndex.concat('1')), weirdPartition(i, height - j, parentIndex.concat('2')), weirdPartition(width - i, height - j, parentIndex.concat('3')))
 }
 
 /**
@@ -101,6 +142,13 @@ function weirdPartition(width, height, parentIndex) {
  * @param {Array<Object>} boardList - A list of 4 mergeable boards to be merged into 1
  */
 function merge(boardList){
+    if (boardList.length === 1) { // Should not be anything other than 1 or 4
+        console.log("Only one board given, skipping merge")
+        return boardList[0]
+    }
+
+    console.log('Attempting to merge')
+
     let mergedBoard = {
         boardArray: [], 
         visited: [], 
@@ -157,7 +205,7 @@ async function knightsTour(board){
     //progress();
     // import Board from './Board';
     // Starting location does not matter since we're looking for a closed undirected tour
-    let currLoc = [5, 5]
+    let currLoc = [0, 0]
     // For now, modify this too
 
     /*
@@ -305,19 +353,18 @@ async function knightsTour(board){
     // progress()
 }
 
-let boardList = weirdPartition(99, 99, 0) // Doesnt work too well for non-squares
-
-let boardSizes = boardList.map(board => {
-    [board.width, board.height]
-})
+let boardList = weirdPartition(18, 18, '0') // Doesnt work too well for non-squares
 
 console.log(boardSizes)
 
-// for (let board of boardList) {
-//     knightsTour(board);
-// }
+for (let board of boardList) {
+    knightsTour(board);
+}
 
-// let merged = merge(boardList)
-// for (let i = 0; i < merged.visited.length; i++) {
-//     console.log(`${i}: [${merged.visited[i][0]}][${merged.visited[i][1]}]`)
-// }
+// let board = generateBoard(5, 6)
+// knightsTour(board)
+
+let merged = merge(boardList)
+for (let i = 0; i < merged.visited.length; i++) {
+    console.log(`${i}: [${merged.visited[i][0]}][${merged.visited[i][1]}]`)
+}
