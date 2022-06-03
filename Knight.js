@@ -233,7 +233,7 @@ async function main() {
     }
     
     function knightsTour(board){
-        // progress();
+        progress();
         // import Board from './Board';
         // Starting location does not matter since we're looking for a closed undirected tour
         let currLoc = [0, 0]
@@ -378,53 +378,49 @@ async function main() {
         }
     
         while (!findTour()) {
-            // progress()
+            progress()
             console.log("Try again")
         }
-        // progress()
+        progress()
         return board
     }
 
     /* INPUT SET */
-    const inputSet = partition(50, 50, '0');
+    const inputSet = partition(100, 100, '0');
     console.log(inputSet.map(board => [board.width, board.height]))
-    let resultSet = []
-    for (let board of inputSet) {
-        resultSet.push(knightsTour(board))
-    }
 
-    // const job = compute.for(inputSet, knightsTour);
+    const job = compute.for(inputSet, knightsTour);
 
-    // job.public.name = 'knights-tour-dcp';
+    job.public.name = 'knights-tour-dcp';
 
     // // // SKIP IF: you do not need a compute group
     // // // job.computeGroups = [{ joinKey: 'KEY', joinSecret: 'SECRET' }];
-    // job.computeGroups = [{ joinKey: "aitf", joinSecret: "9YDEXdihud" }];
+    job.computeGroups = [{ joinKey: "aitf", joinSecret: "9YDEXdihud" }];
 
 
-    // // Not mandatory console logs for status updates
-    // job.on('accepted', () => {
-    //     console.log(` - Job accepted with id: ${job.id}`);
-    // });
-    // job.on('result', (ev) => {
-    //     console.log(` - Received result ${ev}`);
-    // });
-    // job.on("status", (ev) => {
-    //     console.log("Got status update: ", ev);
-    // });
-    // job.on("complete", (ev) => {
-    //     console.log("got complete");
-    // });
-    // job.on("readystatechange", (arg) => {
-    //     console.log(`new ready state: ${arg}`);
-    // });
-    // job.on("error", (err) => {
-    //     console.error(`Error: ${JSON.stringify(err)}`);
-    // });
+    // Not mandatory console logs for status updates
+    job.on('accepted', () => {
+        console.log(` - Job accepted with id: ${job.id}`);
+    });
+    job.on('result', (ev) => {
+        console.log(` - Received result ${ev}`);
+    });
+    job.on("status", (ev) => {
+        console.log("Got status update: ", ev);
+    });
+    job.on("complete", (ev) => {
+        console.log("got complete");
+    });
+    job.on("readystatechange", (arg) => {
+        console.log(`new ready state: ${arg}`);
+    });
+    job.on("error", (err) => {
+        console.error(`Error: ${JSON.stringify(err)}`);
+    });
 
-    // /* PROCESS RESULTS */
-    // let resultSet = await job.exec();
-    // resultSet = Array.from(resultSet);
+    /* PROCESS RESULTS */
+    let resultSet = await job.exec();
+    resultSet = Array.from(resultSet);
 
     const newBoard = merge(resultSet)
     const mapping = resultSet.map(board => {board.index})
