@@ -356,7 +356,7 @@ async function knightsTour(board){
     return board
 }
 
-let boardList = [generateBoard(10, 11, '0')] // Doesnt work too well for non-squares
+let boardList = [generateBoard(18, 18, '0')] // Doesnt work too well for non-squares
 
 for (let board of boardList) {
     board = knightsTour(board);

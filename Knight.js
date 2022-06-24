@@ -19,6 +19,9 @@ async function main() {
     }
     function perfectPartition(height, width, parentIndex) {
         let boardList = []
+        if (!isSolvable(Math.floor(width/2), Math.floor(height/2))) {
+            return [generateBoard(width, height, parentIndex)]
+        }
         for (let i = 0; i < 4; i++) {
             boardList = boardList.concat(partition(height/2, width/2, parentIndex.concat(String(i))))
         }
@@ -54,7 +57,7 @@ async function main() {
             width = width + height - width
             height = width + height - height
         }
-        if (width < 2 || height < 2) {
+        if (width < 3 || height < 3) {
             return false
         }
 
@@ -138,7 +141,7 @@ async function main() {
                 console.log(`No smaller solvable block, generating for ${width}x${height} at index ${parentIndex}`)
                 return [generateBoard(width, height, parentIndex)]
             } else {
-                throw new Error(`weirdPartition was given an unsolvable and un-partition-able board of size [${width, height}]`)
+                throw new Error(`weirdPartition was given an unsolvable and un-partition-able board of size [${width}, ${height}]`)
             }
         }
 
@@ -232,7 +235,7 @@ async function main() {
         return mergedBoard
     }
     
-    function knightsTour(board){
+    async function knightsTour(board){
         progress();
         // import Board from './Board';
         // Starting location does not matter since we're looking for a closed undirected tour
@@ -386,15 +389,16 @@ async function main() {
     }
 
     /* INPUT SET */
-    const inputSet = partition(100, 100, '0');
+    let startTime = Date.now()
+    const inputSet = partition(20, 20, '0');
     console.log(inputSet.map(board => [board.width, board.height]))
 
     const job = compute.for(inputSet, knightsTour);
 
     job.public.name = 'knights-tour-dcp';
 
-    // // // SKIP IF: you do not need a compute group
-    // // // job.computeGroups = [{ joinKey: 'KEY', joinSecret: 'SECRET' }];
+    // SKIP IF: you do not need a compute group
+    // job.computeGroups = [{ joinKey: 'KEY', joinSecret: 'SECRET' }];
     job.computeGroups = [{ joinKey: "aitf", joinSecret: "9YDEXdihud" }];
 
 
@@ -403,7 +407,7 @@ async function main() {
         console.log(` - Job accepted with id: ${job.id}`);
     });
     job.on('result', (ev) => {
-        console.log(` - Received result ${ev}`);
+        console.log(` - Received result ${ev.index}`);
     });
     job.on("status", (ev) => {
         console.log("Got status update: ", ev);
@@ -421,7 +425,8 @@ async function main() {
     /* PROCESS RESULTS */
     let resultSet = await job.exec();
     resultSet = Array.from(resultSet);
-
+    console.log(`Time elapsed: ${Date.now() - startTime}`)
+    
     const newBoard = merge(resultSet)
     const mapping = resultSet.map(board => {board.index})
     console.log(mapping)
