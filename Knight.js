@@ -156,15 +156,27 @@ async function main() {
         return ((n % m) + m) % m;
     }
 
-    function mergeWrapper(boardList) {
-
+    /**
+     * Merge wrapper, will only work for groups of 4
+     * @param {Array} boardList - The list of solved boards to be merged 
+     * @returns A completely merged board
+     */
+    function merge(boardList){
+        if (boardList.length === 4) {
+            return merge4(boardList)
+        }
+        let mergedBoardList = []
+        while (boardList.length !== 0) {
+            mergedBoardList.push(merge(boardList.splice(0, 4)));
+        }
+        return merge(mergedBoardList)
     }
 
     /**
      * Merge 4 boards into 1
      * @param {Array<Object>} boardList - A list of 4 mergeable boards to be merged into 1
      */
-     function merge(boardList){
+     function merge4(boardList){
         if (boardList.length === 1) { // Should not be anything other than 1 or 4
             console.log("Only one board given, skipping merge")
             return boardList[0]
@@ -213,13 +225,7 @@ async function main() {
                     endMoveNum = boardList[3].boardArray[boardList[3].width -1][0]
                     break
             }
-            console.log(board.visited[startMoveNum])
-            console.log(board.visited[endMoveNum])
-            console.log(startMoveNum)
-            console.log(endMoveNum)
-
             let directionSwitch = mod((startMoveNum+1), (board.width*board.height)) === endMoveNum
-            console.log(directionSwitch)
     
             for (let i = 0; i < board.width * board.height; i++) {
                 let k = i
@@ -390,7 +396,7 @@ async function main() {
 
     /* INPUT SET */
     let startTime = Date.now()
-    const inputSet = partition(20, 20, '0');
+    const inputSet = partition(100, 100, '0');
     console.log(inputSet.map(board => [board.width, board.height]))
 
     const job = compute.for(inputSet, knightsTour);
@@ -426,10 +432,10 @@ async function main() {
     let resultSet = await job.exec();
     resultSet = Array.from(resultSet);
     console.log(`Time elapsed: ${Date.now() - startTime}`)
+
+    console.log(resultSet.map(result => result.index));
     
     const newBoard = merge(resultSet)
-    const mapping = resultSet.map(board => {board.index})
-    console.log(mapping)
 
     console.log(' - Job Complete');
     //console.log(resultSet[0]);

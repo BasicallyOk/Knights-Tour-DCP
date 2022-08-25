@@ -16,6 +16,7 @@ async function main() {
   
     // SKIP IF: you do not need a compute group
     // job.computeGroups = [{ joinKey: 'KEY', joinSecret: 'SECRET' }];
+    job.computeGroups = [{ joinKey: "aitf", joinSecret: "9YDEXdihud" }];
   
     // Not mandatory console logs for status updates
     job.on('accepted', () => {
